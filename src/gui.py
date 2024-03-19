@@ -88,20 +88,32 @@ class FTSApp:
         files_frame = ctk.CTkScrollableFrame(master=self.app, height=360)
         files_frame.pack(pady=10, padx=60, fill="x", anchor=ctk.N)
 
+        
+        files_frame.columnconfigure(0, weight=1)
+        files_frame.columnconfigure(1, weight=1)
+        
         files_label = ctk.CTkLabel(master=files_frame)
-        files_label.pack(pady=(10, 0), padx=20, anchor=ctk.W)
+        files_label.grid(row=0, column=0, sticky=ctk.W, padx=10, pady=(10, 0))
         files_label.configure(text="Arquivos disponíveis", font=("Arial", 20))
-
+        
+        self.refresh_btn = ctk.CTkButton(master=files_frame, text="Refresh", width=30,
+                                        command=self.update_file_table)
+        self.refresh_btn.grid(row=0, column=1, padx=10, sticky=ctk.E,
+                              pady=(10, 0))
+        
+        
+        # File table
         header = [["#", "Nome", "Tipo", "Tamanho"]]
 
         self.table = CTkTable(master=files_frame, row=1, column=4, values=header,
                               command=self.row_clicked, corner_radius=10)
-        self.table.pack(padx=20, pady=(10, 20), anchor=ctk.N)
+        self.table.grid(row=1, column=0, columnspan=2, padx=10, pady=(10, 20))
 
         if self.table.rows == 1:
             self.no_file_label = ctk.CTkLabel(master=files_frame, text_color="gray",
                                               text="Conecte-se a um servidor para ver seus arquivos.")
-            self.no_file_label.pack(pady=(10, 0), padx=20, anchor=ctk.N)
+            self.no_file_label.grid(row=2, column=0, columnspan=2)
+            
 
     def run(self):
         self.app.mainloop()
@@ -134,7 +146,7 @@ class FTSApp:
         self.con_btn.configure(text="Conectado", state="disabled")
         self.discon_btn.configure(state="normal", fg_color="gray")
 
-        self.no_file_label.pack_forget()
+        self.no_file_label.grid_forget()
         
         self.update_file_table()
 
@@ -151,7 +163,7 @@ class FTSApp:
         self.CURRENT_SERVER_PORT = -1
         self.CURRENT_SERVER_IP = ""
 
-        self.no_file_label.pack()
+        self.no_file_label.grid()
         
         self.erase_table()
         
@@ -161,15 +173,19 @@ class FTSApp:
         if event.get("row") == 0:
             return None
 
-        # if event.get("row") > self.CURRENT_SERVER_FILE_COUNT + 1:
-        #     return None
-
         for i in range(self.table.rows):
             self.table.deselect_row(i)
 
         self.table.select_row(event.get("row"))
 
     def update_file_table(self):
+        
+        if self.CURRENT_SERVER_IP == "" or self.CURRENT_SERVER_PORT == -1:
+            CTkMessagebox(title="Error",
+                          message="Você precisa se conectar a um servidor para ver seus arquivos.",
+                          icon="cancel")
+            return
+        
         self.erase_table()
 
         data = [["1", "file1", "txt", "1.2MB"],
