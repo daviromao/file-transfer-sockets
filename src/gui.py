@@ -34,7 +34,6 @@ class FTSApp:
 
     CURRENT_SERVER_PORT: int = -1
     CURRENT_SERVER_IP: str = ""
-    # CURRENT_SERVER_FILE_COUNT: int = 0
 
     def __init__(self):
         self.interface_setup()
@@ -44,7 +43,7 @@ class FTSApp:
         ctk.set_default_color_theme("blue")
 
         self.app = ctk.CTk()
-        self.app.geometry("700x800")
+        self.app.geometry("680x750")
         self.app.title("Network File Sharing")
 
         title = ctk.CTkLabel(master=self.app, text="Transferência de Arquivos",
@@ -85,7 +84,7 @@ class FTSApp:
         self.discon_btn.configure(state="disabled", fg_color="gray")
 
         # Downloadable files section
-        files_frame = ctk.CTkScrollableFrame(master=self.app, height=360)
+        files_frame = ctk.CTkScrollableFrame(master=self.app, height=300)
         files_frame.pack(pady=10, padx=60, fill="x", anchor=ctk.N)
 
         
@@ -96,10 +95,11 @@ class FTSApp:
         files_label.grid(row=0, column=0, sticky=ctk.W, padx=10, pady=(10, 0))
         files_label.configure(text="Arquivos disponíveis", font=("Arial", 20))
         
-        self.refresh_btn = ctk.CTkButton(master=files_frame, text="Refresh", width=30,
+        self.refresh_btn = ctk.CTkButton(master=files_frame, text="Refresh", width=20,
                                         command=self.update_file_table)
         self.refresh_btn.grid(row=0, column=1, padx=10, sticky=ctk.E,
                               pady=(10, 0))
+        self.refresh_btn.configure(state="disabled")
         
         
         # File table
@@ -113,7 +113,19 @@ class FTSApp:
             self.no_file_label = ctk.CTkLabel(master=files_frame, text_color="gray",
                                               text="Conecte-se a um servidor para ver seus arquivos.")
             self.no_file_label.grid(row=2, column=0, columnspan=2)
-            
+        
+        
+        self.download_btn = ctk.CTkButton(master=self.app,
+                                     text="Download",
+                                     command=self.download)
+        self.download_btn.pack(side="left", pady=10, padx=(60, 20), anchor=ctk.N)
+        self.download_btn.configure(state="disabled")
+
+        self.upload_btn = ctk.CTkButton(master=self.app, text="Upload",
+                                        command=self.upload)
+        self.upload_btn.pack(side="left", pady=10, padx=0, anchor=ctk.N)
+        self.upload_btn.configure(fg_color="gray")
+        self.upload_btn.configure(state="disabled")
 
     def run(self):
         self.app.mainloop()
@@ -146,6 +158,10 @@ class FTSApp:
         self.con_btn.configure(text="Conectado", state="disabled")
         self.discon_btn.configure(state="normal", fg_color="gray")
 
+        self.upload_btn.configure(state="normal")
+        self.download_btn.configure(state="normal")
+        self.refresh_btn.configure(state="normal")
+        
         self.no_file_label.grid_forget()
         
         self.update_file_table()
@@ -163,7 +179,11 @@ class FTSApp:
         self.CURRENT_SERVER_PORT = -1
         self.CURRENT_SERVER_IP = ""
 
-        self.no_file_label.grid()
+        self.no_file_label.grid(row=2, column=0, columnspan=2)
+        
+        self.upload_btn.configure(state="disabled")
+        self.download_btn.configure(state="disabled")
+        self.refresh_btn.configure(state="disabled")
         
         self.erase_table()
         
@@ -201,4 +221,10 @@ class FTSApp:
 
     def erase_table(self):
         self.table.delete_rows(range(1, self.table.rows))
-        
+    
+    def download(self):
+        print(self.table.get_selected_row())
+    
+    def upload(self):
+        filename = ctk.filedialog.askopenfilename()
+        print(filename)
