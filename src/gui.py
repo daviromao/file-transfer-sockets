@@ -248,8 +248,7 @@ class FTSApp:
     def upload(self):
         filename = ctk.filedialog.askopenfilename()
         
-        if send_file(filename, self.CURRENT_SERVER_IP, self.CURRENT_SERVER_PORT):
-            print("opa")
+        send_file(filename, self.CURRENT_SERVER_IP, self.CURRENT_SERVER_PORT)
         
         CTkMessagebox(message="CTkMessagebox is successfully installed.",
                   icon="check", option_1="Ok")
