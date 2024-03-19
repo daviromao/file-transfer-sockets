@@ -34,7 +34,7 @@ class FTSApp:
 
     CURRENT_SERVER_PORT: int = -1
     CURRENT_SERVER_IP: str = ""
-    CURRENT_SERVER_FILE_COUNT: int = 0
+    # CURRENT_SERVER_FILE_COUNT: int = 0
 
     def __init__(self):
         self.interface_setup()
@@ -98,7 +98,7 @@ class FTSApp:
                               command=self.row_clicked, corner_radius=10)
         self.table.pack(padx=20, pady=(10, 20), anchor=ctk.N)
 
-        if self.CURRENT_SERVER_FILE_COUNT == 0:
+        if self.table.rows == 1:
             self.no_file_label = ctk.CTkLabel(master=files_frame, text_color="gray",
                                               text="Conecte-se a um servidor para ver seus arquivos.")
             self.no_file_label.pack(pady=(10, 0), padx=20, anchor=ctk.N)
@@ -134,6 +134,8 @@ class FTSApp:
         self.con_btn.configure(text="Conectado", state="disabled")
         self.discon_btn.configure(state="normal", fg_color="gray")
 
+        self.no_file_label.pack_forget()
+        
         self.update_file_table()
 
     def reset_server_info(self):
@@ -149,14 +151,18 @@ class FTSApp:
         self.CURRENT_SERVER_PORT = -1
         self.CURRENT_SERVER_IP = ""
 
+        self.no_file_label.pack()
+        
+        self.erase_table()
+        
         self.ip_entry.focus()
 
     def row_clicked(self, event):
         if event.get("row") == 0:
             return None
 
-        if event.get("row") > self.CURRENT_SERVER_FILE_COUNT + 1:
-            return None
+        # if event.get("row") > self.CURRENT_SERVER_FILE_COUNT + 1:
+        #     return None
 
         for i in range(self.table.rows):
             self.table.deselect_row(i)
@@ -164,7 +170,7 @@ class FTSApp:
         self.table.select_row(event.get("row"))
 
     def update_file_table(self):
-        self.table.delete_rows(range(1, self.CURRENT_SERVER_FILE_COUNT + 1))
+        self.erase_table()
 
         data = [["1", "file1", "txt", "1.2MB"],
                 ["2", "file2", "jpg", "2.3MB"],
@@ -172,8 +178,11 @@ class FTSApp:
                 ["4", "file4", "png", "4.5MB"],
                 ["5", "file5", "mp3", "5.6MB"]]
 
-        file_count = len(data)
-        self.CURRENT_SERVER_FILE_COUNT = file_count
+        # file_count = len(data)
 
         for i, row in enumerate(data):
             self.table.add_row(index=i + 1, values=row)
+
+    def erase_table(self):
+        self.table.delete_rows(range(1, self.table.rows))
+        
