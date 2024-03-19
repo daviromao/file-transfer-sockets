@@ -1,8 +1,8 @@
+import json
 import customtkinter as ctk
 from CTkTable import CTkTable
 from CTkMessagebox import CTkMessagebox
 from client import get_file_list, send_file
-import json
 
 def validate_ip(ip: str) -> bool:
     """Validates an IP address. Returns True if the IP is valid, False otherwise."""
@@ -236,12 +236,6 @@ class FTSApp:
         files = json.loads(get_file_list(self.CURRENT_SERVER_IP, self.CURRENT_SERVER_PORT))
         data = process_file_list(files)
         
-        # data = [["1", "file1", "txt", "1.2MB"],
-        #         ["2", "file2", "jpg", "2.3MB"],
-        #         ["3", "file3", "pdf", "3.4MB"],
-        #         ["4", "file4", "png", "4.5MB"],
-        #         ["5", "file5", "mp3", "5.6MB"]]
-        
         for i, row in enumerate(data):
             self.table.add_row(index=i + 1, values=row)
 
@@ -253,4 +247,12 @@ class FTSApp:
     
     def upload(self):
         filename = ctk.filedialog.askopenfilename()
-        print(filename)
+        
+        if send_file(filename, self.CURRENT_SERVER_IP, self.CURRENT_SERVER_PORT):
+            print("opa")
+        
+        CTkMessagebox(message="CTkMessagebox is successfully installed.",
+                  icon="check", option_1="Ok")
+        
+        self.update_file_table()
+        
