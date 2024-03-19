@@ -20,7 +20,20 @@ def handle_download_file():
 
 
 def handle_list_files(connection: socket):
-    pass
+    directory = os.path.join(current_directory, "server_files")
+    filesname = os.listdir(directory)
+    
+    data = []
+    
+    for filename in filesname:
+        data.append({
+            "name": filename,
+            "size": os.path.getsize(os.path.join(directory, filename))
+        })
+
+    data_json = json.dumps(data).encode("utf-8")
+    print(data_json)
+    connection.send(data_json)
 
 def handle_request(connection: socket, client_address):
     print(f"Handle request from {client_address}.")
