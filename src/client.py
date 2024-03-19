@@ -1,10 +1,10 @@
 from socket import socket, AF_INET, SOCK_STREAM
 from constants import *
 
-HOST = '172.20.8.236'
-PORT = 9999
+# HOST = '172.20.8.236'
+# PORT = 9999
 
-def get_file_list():
+def get_file_list(HOST: str, PORT: int):
     client = socket(AF_INET, SOCK_STREAM)
     client.connect((HOST, PORT))
     
@@ -19,7 +19,7 @@ def get_file_list():
     return files
 
 
-def send_file(filepath):
+def send_file(filepath, HOST: str, PORT: int):
     client = socket(AF_INET, SOCK_STREAM)
     client.connect((HOST, PORT))
     

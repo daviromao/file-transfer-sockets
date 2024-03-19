@@ -1,7 +1,8 @@
 import customtkinter as ctk
 from CTkTable import CTkTable
 from CTkMessagebox import CTkMessagebox
-
+from client import get_file_list, send_file
+import json
 
 def validate_ip(ip: str) -> bool:
     """Validates an IP address. Returns True if the IP is valid, False otherwise."""
@@ -29,6 +30,28 @@ def validate_port(port: str) -> bool:
 
     return port_int > 0 and port_int < 65536
 
+def get_formatted_size(size):
+    if size is None:
+        return "0 KB"
+
+    for size_unit in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+        if size < 1024.0:
+            return f'{size:.2f} {size_unit}'
+        size = size / 1024.0
+
+def process_file_list(file_list: list) -> list:
+    """Process the file list received from the server. Returns a list of dictionaries."""
+    data = []
+    
+    for i, file in enumerate(file_list):
+        data.append([
+            i + 1,
+            file["name"],
+            file["name"].split(".")[-1].upper(),
+            f"{get_formatted_size(file["size"])}"
+        ])
+        
+    return data
 
 class FTSApp:
 
@@ -150,7 +173,7 @@ class FTSApp:
         print(f"Server Port: {self.port_entry.get()}")
 
         self.CURRENT_SERVER_IP = self.ip_entry.get()
-        self.CURRENT_SERVER_PORT = self.port_entry.get()
+        self.CURRENT_SERVER_PORT = int(self.port_entry.get())
 
         self.ip_entry.configure(state="disabled")
         self.port_entry.configure(state="disabled")
@@ -208,14 +231,17 @@ class FTSApp:
         
         self.erase_table()
 
-        data = [["1", "file1", "txt", "1.2MB"],
-                ["2", "file2", "jpg", "2.3MB"],
-                ["3", "file3", "pdf", "3.4MB"],
-                ["4", "file4", "png", "4.5MB"],
-                ["5", "file5", "mp3", "5.6MB"]]
-
-        # file_count = len(data)
-
+    
+        # get file list from server
+        files = json.loads(get_file_list(self.CURRENT_SERVER_IP, self.CURRENT_SERVER_PORT))
+        data = process_file_list(files)
+        
+        # data = [["1", "file1", "txt", "1.2MB"],
+        #         ["2", "file2", "jpg", "2.3MB"],
+        #         ["3", "file3", "pdf", "3.4MB"],
+        #         ["4", "file4", "png", "4.5MB"],
+        #         ["5", "file5", "mp3", "5.6MB"]]
+        
         for i, row in enumerate(data):
             self.table.add_row(index=i + 1, values=row)
 
