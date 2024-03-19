@@ -12,8 +12,21 @@ PORT = 9999
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
 
-def handle_send_file():
-    pass
+def handle_send_file(connection : socket):
+    get_filenamesize_byte = connection.recv(4)
+    filenamesize = int().from_bytes(get_filenamesize_byte, byteorder='big')
+
+    filename = connection.recv(filenamesize).decode("utf-8")
+    directory = os.path.join(current_directory, "server_files")
+    filepath = os.path.join(directory, filename)
+
+    with open(filepath, 'wb') as file:
+        buffer = connection.recv(1024)
+        while buffer:
+            file.write(buffer)
+            buffer = connection.recv(1024)
+
+    connection.close()
 
 def handle_download_file():
     pass
@@ -48,7 +61,7 @@ def handle_request(connection: socket, client_address):
         handle_download_file()
         
     elif request_type == SEND_FILE :
-        handle_send_file()
+        handle_send_file(connection)
             
     print(f"TCP tunnel with {client_address} closed.")
     connection.close()
