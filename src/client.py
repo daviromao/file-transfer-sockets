@@ -45,29 +45,6 @@ def download_file(filename, HOST: str, PORT: int):
     client.close()
 
 
-def download_file(filename, HOST: str, PORT: int):
-    client = socket(AF_INET, SOCK_STREAM)
-    client.connect((HOST, PORT))
-
-    request_type = DOWNLOAD_FILE.to_bytes(1, byteorder='big')
-    client.send(request_type)
-
-    client.send(filename.encode("utf-8"))
-
-    download_folder = os.path.join(user_folder, "Downloads")
-    if not os.path.exists(download_folder):
-        os.makedirs(download_folder)
-    filepath = os.path.join(download_folder, filename)
-
-    with open(filepath, 'wb') as file:
-        buffer = client.recv(1024)
-        while buffer:
-            file.write(buffer)
-            buffer = client.recv(1024)
-
-    client.close()
-
-
 def send_file(filepath, HOST: str, PORT: int):
     client = socket(AF_INET, SOCK_STREAM)
     client.connect((HOST, PORT))
