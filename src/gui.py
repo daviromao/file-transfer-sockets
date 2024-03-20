@@ -61,6 +61,7 @@ class FTSApp:
 
     CURRENT_SERVER_PORT: int = -1
     CURRENT_SERVER_IP: str = ""
+    server_file_list = []
 
     def __init__(self):
         self.interface_setup()
@@ -215,6 +216,7 @@ class FTSApp:
         self.refresh_btn.configure(state="disabled")
 
         self.erase_table()
+        self.server_file_list.clear()
 
         self.ip_entry.focus()
 
@@ -235,10 +237,13 @@ class FTSApp:
             return
 
         self.erase_table()
+        self.server_file_list.clear()
 
         # get file list from server
         files = json.loads(get_file_list(self.CURRENT_SERVER_IP,
                                          self.CURRENT_SERVER_PORT))
+        self.server_file_list = files
+
         data = process_file_list(files)
 
         for i, row in enumerate(data):
@@ -250,8 +255,11 @@ class FTSApp:
         self.table.delete_rows(range(1, self.table.rows))
 
     def download(self):
-        selected_filename = self.table.get_selected_row()["values"][1]
+        selected_file_id = self.table.get_selected_row()["values"][0]
+        selected_filename = self.server_file_list[selected_file_id - 1]["name"]
+
         print(f"Selected file to download from server: {selected_filename}")
+
         download_file(selected_filename, self.CURRENT_SERVER_IP,
                       self.CURRENT_SERVER_PORT)
 
