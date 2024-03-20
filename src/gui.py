@@ -51,7 +51,7 @@ def process_file_list(file_list: list) -> list:
             i + 1,
             file["name"][:40],
             file["name"].split(".")[-1].upper(),
-            f"{get_formatted_size(file["size"])}"
+            f"{get_formatted_size(file['size'])}"
         ])
 
     return data
