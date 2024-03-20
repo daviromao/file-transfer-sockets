@@ -4,9 +4,9 @@ Transferência de arquivos via `socket` usando protocolo TCP.
 
 ## Como executar
 
-O presente programa foi desenvolvido para ser executado apenas em sistema operacional Linux, não tendo sido testado no Windows nem em WSL.
+O presente programa pode ser executado tanto em sistema operacional Linux quanto no Windows 11. O programa **não** foi testado no WSL.
 
-Para executá-lo garanta que está usando uma versão do Python maior ou igual a 3.12.0. Agora, navegue até a pasta do projeto e instale as bibliotecas necessárias, utilizando o comando abaixo.
+Para executá-lo garanta que está usando uma versão do Python maior ou igual a 3.10.5 (não testamos versões menores que essa). Agora, navegue até a pasta do projeto e instale as bibliotecas necessárias, utilizando o comando abaixo.
 
 ```bash
 pip install -r requirements.txt
