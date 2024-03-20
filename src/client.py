@@ -1,8 +1,10 @@
+import os
 from socket import socket, AF_INET, SOCK_STREAM
 from constants import *
 
-HOST = '172.20.8.236'
+HOST = ''
 PORT = 9999
+user_folder = os.path.expanduser("~")
 
 def get_file_list():
     client = socket(AF_INET, SOCK_STREAM)
@@ -18,6 +20,27 @@ def get_file_list():
     files = data.decode("utf-8")
     return files
 
+def download_file(filename):
+    client = socket(AF_INET, SOCK_STREAM)
+    client.connect((HOST, PORT))
+    
+    request_type = DOWNLOAD_FILE.to_bytes(1, byteorder='big')
+    client.send(request_type)
+    
+    client.send(filename.encode("utf-8"))
+
+    download_folder = os.path.join(user_folder, "Downloads")
+    if not os.path.exists(download_folder):
+        os.makedirs(download_folder)
+    filepath = os.path.join(download_folder, filename)
+
+    with open(filepath, 'wb') as file:
+        buffer = client.recv(1024)
+        while buffer:
+            file.write(buffer)
+            buffer = client.recv(1024)
+    
+    client.close()
 
 def send_file(filepath):
     client = socket(AF_INET, SOCK_STREAM)
@@ -26,7 +49,7 @@ def send_file(filepath):
     request_type = SEND_FILE.to_bytes(1, byteorder='big')
     client.send(request_type)
 
-    filename = filepath.split("/")[-1]
+    filename = filepath.split("/")[-1] 
     filename_size = len(filename).to_bytes(length=4, byteorder='big')
     
     client.send(filename_size)
@@ -39,3 +62,5 @@ def send_file(filepath):
             buffer = file.read(1024)
     
     client.close()
+
+download_file("carnaval.jpg")

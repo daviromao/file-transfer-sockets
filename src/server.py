@@ -28,9 +28,17 @@ def handle_send_file(connection : socket):
 
     connection.close()
 
-def handle_download_file():
-    pass
+def handle_download_file(connection : socket): 
+    filename = connection.recv(1024).decode("utf-8")
+    path = os.path.join(current_directory, "server_files", filename)
 
+    with open(path, 'rb') as file:
+        buffer = file.read(1024)
+        while(buffer):
+            connection.send(buffer)
+            buffer = file.read(1024)
+
+    connection.close()
 
 def handle_list_files(connection: socket):
     directory = os.path.join(current_directory, "server_files")
@@ -58,7 +66,7 @@ def handle_request(connection: socket, client_address):
         handle_list_files(connection)
         
     elif request_type == DOWNLOAD_FILE :
-        handle_download_file()
+        handle_download_file(connection)
         
     elif request_type == SEND_FILE :
         handle_send_file(connection)
