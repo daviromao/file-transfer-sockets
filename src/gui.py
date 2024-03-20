@@ -46,7 +46,7 @@ def process_file_list(file_list: list) -> list:
     for i, file in enumerate(file_list):
         data.append([
             i + 1,
-            file["name"],
+            file["name"][:40],
             file["name"].split(".")[-1].upper(),
             f"{get_formatted_size(file["size"])}"
         ])
@@ -97,7 +97,7 @@ class FTSApp:
         self.port_entry.pack(side="top", fill="x", pady=(0, 10), padx=20)
 
         self.con_btn = ctk.CTkButton(master=server_frame,
-                                     text="Conecte-se a um servidor",
+                                     text="Conecte-se",
                                      command=self.register_server_info)
         self.con_btn.pack(side="left", pady=20, padx=20)
 
@@ -109,7 +109,8 @@ class FTSApp:
         # Downloadable files section
         files_frame = ctk.CTkScrollableFrame(master=self.app, height=300)
         files_frame.pack(pady=10, padx=60, fill="x", anchor=ctk.N)
-
+        files_frame.bind_all("<Button-4>", lambda e: files_frame._parent_canvas.yview("scroll", -1, "units"))
+        files_frame.bind_all("<Button-5>", lambda e: files_frame._parent_canvas.yview("scroll", 1, "units"))
         
         files_frame.columnconfigure(0, weight=1)
         files_frame.columnconfigure(1, weight=1)
@@ -129,9 +130,9 @@ class FTSApp:
         header = [["#", "Nome", "Tipo", "Tamanho"]]
 
         self.table = CTkTable(master=files_frame, row=1, column=4, values=header,
-                              command=self.row_clicked, corner_radius=10)
+                              command=self.row_clicked, corner_radius=0)
         self.table.grid(row=1, column=0, columnspan=2, padx=10, pady=(10, 20))
-
+        
         if self.table.rows == 1:
             self.no_file_label = ctk.CTkLabel(master=files_frame, text_color="gray",
                                               text="Conecte-se a um servidor para ver seus arquivos.")
@@ -178,7 +179,7 @@ class FTSApp:
         self.ip_entry.configure(state="disabled")
         self.port_entry.configure(state="disabled")
 
-        self.con_btn.configure(text="Conectado", state="disabled")
+        self.con_btn.configure(state="disabled")
         self.discon_btn.configure(state="normal", fg_color="gray")
 
         self.upload_btn.configure(state="normal")
@@ -196,7 +197,7 @@ class FTSApp:
         self.ip_entry.delete(0, "end")
         self.port_entry.delete(0, "end")
 
-        self.con_btn.configure(text="Conecte-se a um servidor", state="normal")
+        self.con_btn.configure(state="normal")
         self.discon_btn.configure(state="disabled", fg_color="gray")
 
         self.CURRENT_SERVER_PORT = -1
@@ -222,7 +223,6 @@ class FTSApp:
         self.table.select_row(event.get("row"))
 
     def update_file_table(self):
-        
         if self.CURRENT_SERVER_IP == "" or self.CURRENT_SERVER_PORT == -1:
             CTkMessagebox(title="Error",
                           message="Você precisa se conectar a um servidor para ver seus arquivos.",
@@ -231,13 +231,14 @@ class FTSApp:
         
         self.erase_table()
 
-    
         # get file list from server
         files = json.loads(get_file_list(self.CURRENT_SERVER_IP, self.CURRENT_SERVER_PORT))
         data = process_file_list(files)
         
         for i, row in enumerate(data):
             self.table.add_row(index=i + 1, values=row)
+        
+        self.set_table_column_size()
 
     def erase_table(self):
         self.table.delete_rows(range(1, self.table.rows))
@@ -250,8 +251,14 @@ class FTSApp:
         
         send_file(filename, self.CURRENT_SERVER_IP, self.CURRENT_SERVER_PORT)
         
-        CTkMessagebox(message="CTkMessagebox is successfully installed.",
+        msg = CTkMessagebox(message="CTkMessagebox is successfully installed.",
                   icon="check", option_1="Ok")
         
+        print(msg.get())
         self.update_file_table()
-        
+    
+    def set_table_column_size(self):
+        self.table.edit_column(0, width=20)
+        self.table.edit_column(1, width=250, anchor=ctk.W)
+        self.table.edit_column(2, width=100, anchor=ctk.W)
+        self.table.edit_column(3, width=140)
