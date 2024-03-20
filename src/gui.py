@@ -2,7 +2,8 @@ import json
 import customtkinter as ctk
 from CTkTable import CTkTable
 from CTkMessagebox import CTkMessagebox
-from client import get_file_list, send_file
+from client import get_file_list, send_file, download_file
+
 
 def validate_ip(ip: str) -> bool:
     """Validates an IP address. Returns True if the IP is valid, False otherwise."""
@@ -30,6 +31,7 @@ def validate_port(port: str) -> bool:
 
     return port_int > 0 and port_int < 65536
 
+
 def get_formatted_size(size):
     if size is None:
         return "0 KB"
@@ -39,10 +41,11 @@ def get_formatted_size(size):
             return f'{size:.2f} {size_unit}'
         size = size / 1024.0
 
+
 def process_file_list(file_list: list) -> list:
     """Process the file list received from the server. Returns a list of dictionaries."""
     data = []
-    
+
     for i, file in enumerate(file_list):
         data.append([
             i + 1,
@@ -50,8 +53,9 @@ def process_file_list(file_list: list) -> list:
             file["name"].split(".")[-1].upper(),
             f"{get_formatted_size(file["size"])}"
         ])
-        
+
     return data
+
 
 class FTSApp:
 
@@ -109,40 +113,41 @@ class FTSApp:
         # Downloadable files section
         files_frame = ctk.CTkScrollableFrame(master=self.app, height=300)
         files_frame.pack(pady=10, padx=60, fill="x", anchor=ctk.N)
-        files_frame.bind_all("<Button-4>", lambda e: files_frame._parent_canvas.yview("scroll", -1, "units"))
-        files_frame.bind_all("<Button-5>", lambda e: files_frame._parent_canvas.yview("scroll", 1, "units"))
-        
+        files_frame.bind_all(
+            "<Button-4>", lambda e: files_frame._parent_canvas.yview("scroll", -1, "units"))
+        files_frame.bind_all(
+            "<Button-5>", lambda e: files_frame._parent_canvas.yview("scroll", 1, "units"))
+
         files_frame.columnconfigure(0, weight=1)
         files_frame.columnconfigure(1, weight=1)
-        
+
         files_label = ctk.CTkLabel(master=files_frame)
         files_label.grid(row=0, column=0, sticky=ctk.W, padx=10, pady=(10, 0))
         files_label.configure(text="Arquivos disponíveis", font=("Arial", 20))
-        
+
         self.refresh_btn = ctk.CTkButton(master=files_frame, text="Refresh", width=20,
-                                        command=self.update_file_table)
+                                         command=self.update_file_table)
         self.refresh_btn.grid(row=0, column=1, padx=10, sticky=ctk.E,
                               pady=(10, 0))
         self.refresh_btn.configure(state="disabled")
-        
-        
+
         # File table
         header = [["#", "Nome", "Tipo", "Tamanho"]]
 
         self.table = CTkTable(master=files_frame, row=1, column=4, values=header,
                               command=self.row_clicked, corner_radius=0)
         self.table.grid(row=1, column=0, columnspan=2, padx=10, pady=(10, 20))
-        
+
         if self.table.rows == 1:
             self.no_file_label = ctk.CTkLabel(master=files_frame, text_color="gray",
                                               text="Conecte-se a um servidor para ver seus arquivos.")
             self.no_file_label.grid(row=2, column=0, columnspan=2)
-        
-        
+
         self.download_btn = ctk.CTkButton(master=self.app,
-                                     text="Download",
-                                     command=self.download)
-        self.download_btn.pack(side="left", pady=10, padx=(60, 20), anchor=ctk.N)
+                                          text="Download",
+                                          command=self.download)
+        self.download_btn.pack(side="left", pady=10,
+                               padx=(60, 20), anchor=ctk.N)
         self.download_btn.configure(state="disabled")
 
         self.upload_btn = ctk.CTkButton(master=self.app, text="Upload",
@@ -185,9 +190,9 @@ class FTSApp:
         self.upload_btn.configure(state="normal")
         self.download_btn.configure(state="normal")
         self.refresh_btn.configure(state="normal")
-        
+
         self.no_file_label.grid_forget()
-        
+
         self.update_file_table()
 
     def reset_server_info(self):
@@ -204,13 +209,13 @@ class FTSApp:
         self.CURRENT_SERVER_IP = ""
 
         self.no_file_label.grid(row=2, column=0, columnspan=2)
-        
+
         self.upload_btn.configure(state="disabled")
         self.download_btn.configure(state="disabled")
         self.refresh_btn.configure(state="disabled")
-        
+
         self.erase_table()
-        
+
         self.ip_entry.focus()
 
     def row_clicked(self, event):
@@ -228,35 +233,46 @@ class FTSApp:
                           message="Você precisa se conectar a um servidor para ver seus arquivos.",
                           icon="cancel")
             return
-        
+
         self.erase_table()
 
         # get file list from server
-        files = json.loads(get_file_list(self.CURRENT_SERVER_IP, self.CURRENT_SERVER_PORT))
+        files = json.loads(get_file_list(self.CURRENT_SERVER_IP,
+                                         self.CURRENT_SERVER_PORT))
         data = process_file_list(files)
-        
+
         for i, row in enumerate(data):
             self.table.add_row(index=i + 1, values=row)
-        
+
         self.set_table_column_size()
 
     def erase_table(self):
         self.table.delete_rows(range(1, self.table.rows))
-    
+
     def download(self):
-        print(self.table.get_selected_row())
-    
+        selected_filename = self.table.get_selected_row()["values"][1]
+        print(f"Selected file to download from server: {selected_filename}")
+        download_file(selected_filename, self.CURRENT_SERVER_IP,
+                      self.CURRENT_SERVER_PORT)
+
+        msg = CTkMessagebox(message="Download finalizado com sucesso.",
+                            icon="check", option_1="Ok")
+
+        print(msg.get())
+
     def upload(self):
         filename = ctk.filedialog.askopenfilename()
-        
+
+        print(f"Selected file to upload to server: {filename}")
+
         send_file(filename, self.CURRENT_SERVER_IP, self.CURRENT_SERVER_PORT)
-        
-        msg = CTkMessagebox(message="CTkMessagebox is successfully installed.",
-                  icon="check", option_1="Ok")
-        
+
+        msg = CTkMessagebox(message="Upload finalizado com sucesso.",
+                            icon="check", option_1="Ok")
+
         print(msg.get())
         self.update_file_table()
-    
+
     def set_table_column_size(self):
         self.table.edit_column(0, width=20)
         self.table.edit_column(1, width=250, anchor=ctk.W)
